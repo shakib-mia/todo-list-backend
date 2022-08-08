@@ -22,7 +22,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    const collection = await client.db("todo").collection("works");
+    const collection = await client.db("todos").collection("works");
 
     app.get("/", (req, res) => {
       res.send("server is running on port " + port);
@@ -39,6 +39,21 @@ async function run() {
       const query = req.body;
       const cursor = await collection.insertOne(query);
       res.send(cursor);
+    });
+
+    app.get("/todos/:_id", async (req, res) => {
+      const query = req.body;
+      const cursor = await collection.updateOne(query);
+      res.send(cursor);
+    });
+
+    app.put("/todos/:_id", async (req, res) => {
+      const query = { _id: ObjectId(req.params._id) };
+      const filter = await collection.findOne(query);
+      const updatedDoc = { $set: { isDone: true } };
+      const result = await collection.updateOne(filter, updatedDoc);
+
+      res.send(result);
     });
 
     app.delete("/todos/:_id", async (req, res) => {
